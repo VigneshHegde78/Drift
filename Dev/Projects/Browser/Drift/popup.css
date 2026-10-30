@@ -1,0 +1,78 @@
+body {
+  width: 280px;
+  margin: 0;
+  padding: 18px;
+  box-sizing: border-box;
+
+  background: #15171d;
+  color: #ffffff;
+
+  font-family: Arial, sans-serif;
+}
+
+/* Header */
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 22px;
+}
+
+header h2 {
+  margin: 0;
+  font-size: 20px;
+  letter-spacing: -1px;
+}
+
+.status {
+  color: #91c9a3;
+  font-size: 10px;
+  letter-spacing: 1px;
+}
+
+/* Main card */
+
+main {
+  background: #22252d;
+  padding: 16px;
+  border-radius: 14px;
+}
+
+.label {
+  color: #9299a8;
+  font-size: 10px;
+  letter-spacing: 1px;
+}
+
+main h3 {
+  margin: 10px 0 20px;
+  font-size: 17px;
+}
+
+/* Statistics */
+
+.stats {
+  display: flex;
+  justify-content: space-between;
+}
+
+.stats h1 {
+  margin: 0;
+  font-size: 25px;
+}
+
+.stats p {
+  margin-bottom: 0;
+  color: #9299a8;
+  font-size: 11px;
+}
+
+/* Footer */
+
+footer {
+  margin-top: 18px;
+  text-align: center;
+  color: #777e8d;
+  font-size: 11px;
+}
