@@ -1,0 +1,43 @@
+#drift-pill {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 2147483647;
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  padding: 10px 15px;
+  border-radius: 999px;
+
+  background: rgba(25, 27, 32, 0.65);
+  backdrop-filter: blur(16px);
+
+  border: 1px solid rgba(255, 255, 255, 0.2);
+
+  color: white;
+  font:
+    13px Arial,
+    sans-serif;
+
+  cursor: grab;
+  touch-action: none;
+
+  #drift-pill:active {
+    cursor: grabbing;
+  }
+}
+
+.drift-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #82b5ff;
+}
+
+.drift-divider {
+  width: 1px;
+  height: 16px;
+  background: rgba(255, 255, 255, 0.3);
+}
