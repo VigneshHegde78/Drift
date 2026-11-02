@@ -1,18 +1,27 @@
 {
   "manifest_version": 3,
   "name": "Drift",
-  "version": "0.1.0",
-  "description": "A minimal screen-time tracker.",
-
-  "permissions": ["tabs"],
-
+  "version": "0.2.0",
+  "description": "Mindful browsing. See where your time goes. Decide where it should go.",
+  "icons": {
+    "16": "icon.png",
+    "48": "icon.png",
+    "128": "icon.png"
+  },
+  "permissions": [
+    "tabs",
+    "storage",
+    "idle"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
   "action": {
     "default_popup": "popup.html"
   },
-
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
+      "matches": ["http://*/*", "https://*/*"],
       "js": ["content.js"],
       "css": ["content.css"]
     }

@@ -1,43 +1,347 @@
-#drift-pill {
+/* Drift - System Themed Translucent Floating Pill */
+
+#drift-container {
+  all: initial;
   position: fixed;
-  top: 20px;
-  right: 20px;
   z-index: 2147483647;
-
   display: flex;
-  align-items: center;
-  gap: 12px;
-
-  padding: 10px 15px;
-  border-radius: 999px;
-
-  background: rgba(25, 27, 32, 0.65);
-  backdrop-filter: blur(16px);
-
-  border: 1px solid rgba(255, 255, 255, 0.2);
-
-  color: white;
-  font:
-    13px Arial,
-    sans-serif;
-
-  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 12px;
+  line-height: 1.2;
+  box-sizing: border-box;
+  pointer-events: auto;
   touch-action: none;
+  opacity: 1;
 
-  #drift-pill:active {
-    cursor: grabbing;
+  /* Light Theme (Default) */
+  --drift-bg: rgba(255, 255, 255, 0.82);
+  --drift-border: rgba(226, 232, 240, 0.85);
+  --drift-shadow: 0 4px 20px rgba(49, 91, 219, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04);
+  --drift-text: #0f172a;
+  --drift-muted: #64748b;
+  --drift-favicon-bg: rgba(241, 245, 249, 0.9);
+  --drift-favicon-border: rgba(226, 232, 240, 0.8);
+  --drift-btn-bg: #e8f0ff;
+  --drift-btn-color: #315bdb;
+  --drift-btn-hover: #d6e4ff;
+  --drift-paused-bg: #fef3c7;
+  --drift-paused-color: #d97706;
+  --drift-chevron: #94a3b8;
+  --drift-chevron-hover: #315bdb;
+
+  transition: opacity 0.3s ease,
+              transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              top 0.32s cubic-bezier(0.16, 1, 0.3, 1),
+              left 0.32s cubic-bezier(0.16, 1, 0.3, 1),
+              right 0.32s cubic-bezier(0.16, 1, 0.3, 1),
+              bottom 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Dark Theme (Automatic System Adaptation) */
+@media (prefers-color-scheme: dark) {
+  #drift-container {
+    --drift-bg: rgba(15, 23, 42, 0.78);
+    --drift-border: rgba(255, 255, 255, 0.14);
+    --drift-shadow: 0 4px 22px rgba(0, 0, 0, 0.45), 0 2px 6px rgba(0, 0, 0, 0.25);
+    --drift-text: #f8fafc;
+    --drift-muted: #94a3b8;
+    --drift-favicon-bg: rgba(255, 255, 255, 0.08);
+    --drift-favicon-border: rgba(255, 255, 255, 0.12);
+    --drift-btn-bg: rgba(49, 91, 219, 0.25);
+    --drift-btn-color: #60a5fa;
+    --drift-btn-hover: rgba(49, 91, 219, 0.38);
+    --drift-paused-bg: rgba(245, 158, 11, 0.25);
+    --drift-paused-color: #fbbf24;
+    --drift-chevron: rgba(255, 255, 255, 0.55);
+    --drift-chevron-hover: #60a5fa;
   }
 }
 
-.drift-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #82b5ff;
+#drift-container *,
+#drift-container *::before,
+#drift-container *::after {
+  box-sizing: border-box;
+  font-family: inherit;
 }
 
-.drift-divider {
-  width: 1px;
+/* Corner Docking */
+#drift-container.corner-top-right {
+  top: 20px;
+  right: 20px;
+  bottom: auto;
+  left: auto;
+}
+
+#drift-container.corner-top-left {
+  top: 20px;
+  left: 20px;
+  bottom: auto;
+  right: auto;
+}
+
+#drift-container.corner-bottom-right {
+  bottom: 20px;
+  right: 20px;
+  top: auto;
+  left: auto;
+}
+
+#drift-container.corner-bottom-left {
+  bottom: 20px;
+  left: 20px;
+  top: auto;
+  right: auto;
+}
+
+/* Dragging Mode */
+#drift-container.drift-dragging {
+  transition: none !important;
+}
+
+#drift-container.drift-dragging .drift-pill {
+  cursor: grabbing !important;
+  transform: scale(1.04);
+  box-shadow: 0 12px 28px rgba(49, 91, 219, 0.25), 0 4px 10px rgba(0, 0, 0, 0.12) !important;
+}
+
+/* Smart Idle Dimming */
+#drift-container.drift-idle:not(:hover):not(.maximized) {
+  opacity: 0.42;
+}
+
+/* BASE TRANSLUCENT GLASS PILL */
+.drift-pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9999px;
+  background: var(--drift-bg);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid var(--drift-border);
+  box-shadow: var(--drift-shadow);
+  cursor: grab;
+  color: var(--drift-text);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+}
+
+#drift-container:not(.drift-dragging) .drift-pill:hover {
+  box-shadow: 0 8px 24px rgba(49, 91, 219, 0.18), 0 2px 8px rgba(0, 0, 0, 0.08);
+  transform: scale(1.02);
+}
+
+/* ========================================================
+   1. MINIMIZED STATE: Website Icon + Time Spent
+   ======================================================== */
+.drift-pill.minimized {
+  height: 32px;
+  padding: 4px 11px 4px 6px;
+  gap: 7px;
+}
+
+.drift-pill.minimized .drift-favicon-box {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+}
+
+.drift-pill.minimized .drift-favicon {
+  width: 13px;
+  height: 13px;
+}
+
+.drift-pill.minimized .drift-time {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--drift-text);
+}
+
+/* Hide domain link & controls when minimized */
+.drift-pill.minimized .drift-domain-link,
+.drift-pill.minimized .drift-pill-controls {
+  display: none !important;
+}
+
+/* ========================================================
+   2. MAXIMIZED STATE: Icon, Link, Time Spent, Pause & Toggle
+   ======================================================== */
+.drift-pill.maximized {
+  height: 46px;
+  padding: 6px 12px 6px 9px;
+  gap: 10px;
+}
+
+.drift-pill.maximized .drift-favicon-box {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+}
+
+.drift-pill.maximized .drift-favicon {
+  width: 16px;
   height: 16px;
-  background: rgba(255, 255, 255, 0.3);
+}
+
+.drift-pill.maximized .drift-time {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--drift-text);
+}
+
+.drift-pill.maximized .drift-domain-link {
+  display: block;
+}
+
+.drift-pill.maximized .drift-pill-controls {
+  display: flex;
+}
+
+/* Favicon Box */
+.drift-favicon-box {
+  background: var(--drift-favicon-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 1px solid var(--drift-favicon-border);
+  transition: all 0.2s ease;
+}
+
+.drift-favicon {
+  border-radius: 3px;
+  object-fit: contain;
+}
+
+/* Info Column */
+.drift-pill-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.drift-pill-time-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.drift-time {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+  color: var(--drift-text);
+  transition: font-size 0.2s ease, color 0.2s ease;
+}
+
+/* Paused State */
+.drift-pill.paused .drift-time {
+  color: var(--drift-paused-color);
+}
+
+.drift-swipes-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 9px;
+  font-weight: 600;
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.12);
+  padding: 1px 5px;
+  border-radius: 9999px;
+  white-space: nowrap;
+}
+
+.drift-swipes-badge.drift-hidden {
+  display: none !important;
+}
+
+.drift-swipes-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #ef4444;
+}
+
+/* Domain Link */
+.drift-domain-link {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--drift-muted);
+  text-decoration: none;
+  line-height: 1.1;
+  max-width: 115px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: color 0.15s ease;
+}
+
+.drift-domain-link:hover {
+  color: var(--drift-btn-color);
+  text-decoration: underline;
+}
+
+/* Controls: Pause & Collapse Chevron */
+.drift-pill-controls {
+  align-items: center;
+  gap: 6px;
+  margin-left: 2px;
+}
+
+.drift-pill-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 0;
+  border-radius: 8px;
+  transition: all 0.15s ease;
+}
+
+.drift-pause-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  background: var(--drift-btn-bg);
+  color: var(--drift-btn-color);
+}
+
+.drift-pause-btn:hover {
+  background: var(--drift-btn-hover);
+  transform: scale(1.05);
+}
+
+.drift-pause-btn.paused {
+  background: var(--drift-paused-bg);
+  color: var(--drift-paused-color);
+}
+
+.drift-icon-pause {
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  font-weight: 700;
+}
+
+.drift-toggle-btn {
+  width: 20px;
+  height: 26px;
+  color: var(--drift-chevron);
+}
+
+.drift-toggle-btn:hover {
+  color: var(--drift-chevron-hover);
+}
+
+.drift-chevron {
+  transform: rotate(180deg);
+  transition: transform 0.2s ease;
+}
+
+.drift-hidden {
+  display: none !important;
 }
