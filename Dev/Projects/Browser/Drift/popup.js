@@ -17,11 +17,23 @@ const tabButtons = document.querySelectorAll(".tab-btn");
 
 const heroTotalTime = document.getElementById("hero-total-time");
 const barsContainer = document.getElementById("bars-container");
-const statSwipesVal = document.getElementById("stat-swipes-val");
 const statFocusVal = document.getElementById("stat-focus-val");
+const statDistCardVal = document.getElementById("stat-dist-card-val");
 const sitesListContainer = document.getElementById("sites-list-container");
 const btnSeeAll = document.getElementById("btn-see-all");
 
+// Category Breakdown Elements
+const statusIndicator = document.getElementById("status-indicator");
+const breakdownLabel = document.getElementById("breakdown-label");
+const breakdownRatio = document.getElementById("breakdown-ratio");
+const segProductive = document.getElementById("seg-productive");
+const segDistracting = document.getElementById("seg-distracting");
+const segNeutral = document.getElementById("seg-neutral");
+const txtProdTime = document.getElementById("txt-prod-time");
+const txtDistTime = document.getElementById("txt-dist-time");
+const txtNeutTime = document.getElementById("txt-neut-time");
+
+// Settings Elements
 const toggleFloatingPill = document.getElementById("toggle-floating-pill");
 const toggleIdleDetection = document.getElementById("toggle-idle-detection");
 const btnDataSetting = document.getElementById("btn-data-setting");
@@ -29,7 +41,6 @@ const dataActionsBox = document.getElementById("data-actions-box");
 const btnResetToday = document.getElementById("btn-reset-today");
 const btnClearAll = document.getElementById("btn-clear-all");
 
-// Format helpers
 function formatDuration(totalSeconds) {
   if (!totalSeconds || totalSeconds <= 0) return "0m";
 
@@ -55,9 +66,7 @@ function getTodayKey() {
 function getWeekDateKeys() {
   const dates = [];
   const now = new Date();
-  // Get current day of week (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
   const dayOfWeek = now.getDay();
-  // Distance from Monday (1)
   const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
   const monday = new Date(now);
   monday.setDate(now.getDate() + diffToMonday);
@@ -70,13 +79,23 @@ function getWeekDateKeys() {
   return dates;
 }
 
+function getDomainCategory(domain) {
+  if (cachedSettings?.categories?.[domain]) {
+    return cachedSettings.categories[domain];
+  }
+  if (/github|gitlab|stackoverflow|notion|figma|linear|jira|slack|chatgpt|claude|gemini|wiki/i.test(domain)) {
+    return "productive";
+  }
+  if (/youtube|tiktok|instagram|twitter|x\.com|reddit|facebook|netflix|twitch/i.test(domain)) {
+    return "distracting";
+  }
+  return "neutral";
+}
+
 // Fetch dashboard state from background
 async function loadDashboard() {
   chrome.runtime.sendMessage({ type: "DRIFT_GET_DASHBOARD" }, (response) => {
-    if (chrome.runtime.lastError || !response) {
-      console.warn("Drift: Unable to connect to background worker.");
-      return;
-    }
+    if (chrome.runtime.lastError || !response) return;
 
     cachedData = response.data || { days: {} };
     cachedSettings = response.settings || {};
@@ -99,49 +118,51 @@ function renderView() {
   const weekKeys = getWeekDateKeys();
 
   let targetTotalSec = 0;
-  let targetFocusSec = 0;
-  let targetSwipes = 0;
-  let aggregatedDomains = {}; // { [domain]: seconds }
+  let aggregatedDomains = {}; // { [domain]: { seconds, category } }
 
-  if (currentRange === "today") {
-    const todayData = cachedData.days?.[todayKey] || { totalSeconds: 0, focusSeconds: 0, swipes: 0, domains: {} };
-    targetTotalSec = todayData.totalSeconds || 0;
-    targetFocusSec = todayData.focusSeconds || 0;
-    targetSwipes = todayData.swipes || 0;
+  let prodSeconds = 0;
+  let distSeconds = 0;
+  let neutSeconds = 0;
 
-    for (const [dom, stats] of Object.entries(todayData.domains || {})) {
-      aggregatedDomains[dom] = stats.seconds || 0;
-    }
-  } else if (currentRange === "week") {
-    for (const key of weekKeys) {
-      const dayData = cachedData.days?.[key];
-      if (dayData) {
-        targetTotalSec += dayData.totalSeconds || 0;
-        targetFocusSec += dayData.focusSeconds || 0;
-        targetSwipes += dayData.swipes || 0;
+  function processDayEntry(dayData) {
+    if (!dayData) return;
+    targetTotalSec += dayData.totalSeconds || 0;
 
-        for (const [dom, stats] of Object.entries(dayData.domains || {})) {
-          aggregatedDomains[dom] = (aggregatedDomains[dom] || 0) + (stats.seconds || 0);
-        }
+    for (const [dom, stats] of Object.entries(dayData.domains || {})) {
+      const sec = stats.seconds || 0;
+      const cat = getDomainCategory(dom);
+
+      if (!aggregatedDomains[dom]) {
+        aggregatedDomains[dom] = { seconds: 0, category: cat };
       }
-    }
-  } else {
-    // All time
-    for (const dayData of Object.values(cachedData.days || {})) {
-      targetTotalSec += dayData.totalSeconds || 0;
-      targetFocusSec += dayData.focusSeconds || 0;
-      targetSwipes += dayData.swipes || 0;
+      aggregatedDomains[dom].seconds += sec;
+      aggregatedDomains[dom].category = cat;
 
-      for (const [dom, stats] of Object.entries(dayData.domains || {})) {
-        aggregatedDomains[dom] = (aggregatedDomains[dom] || 0) + (stats.seconds || 0);
-      }
+      if (cat === "productive") prodSeconds += sec;
+      else if (cat === "distracting") distSeconds += sec;
+      else neutSeconds += sec;
     }
   }
 
-  // Update Hero & Cards
+  if (currentRange === "today") {
+    processDayEntry(cachedData.days?.[todayKey]);
+  } else if (currentRange === "week") {
+    for (const key of weekKeys) {
+      processDayEntry(cachedData.days?.[key]);
+    }
+  } else {
+    for (const dayData of Object.values(cachedData.days || {})) {
+      processDayEntry(dayData);
+    }
+  }
+
+  // Update Hero & Highlight Cards
   heroTotalTime.textContent = formatDuration(targetTotalSec);
-  statSwipesVal.textContent = `${targetSwipes} swipes`;
-  statFocusVal.textContent = formatDuration(targetFocusSec);
+  statFocusVal.textContent = formatDuration(prodSeconds);
+  statDistCardVal.textContent = formatDuration(distSeconds);
+
+  // Update Category Breakdown
+  renderCategoryBreakdown(prodSeconds, distSeconds, neutSeconds, targetTotalSec);
 
   // Render Bar Chart (7 days)
   renderWeeklyChart(weekKeys, todayKey);
@@ -150,12 +171,50 @@ function renderView() {
   renderTopWebsites(aggregatedDomains);
 }
 
-// Render 7-day Weekly Bar Chart
+// Render Category Breakdown (Productive, Distracting, Neutral)
+function renderCategoryBreakdown(prodSec, distSec, neutSec, totalSec) {
+  txtProdTime.textContent = formatDuration(prodSec);
+  txtDistTime.textContent = formatDuration(distSec);
+  txtNeutTime.textContent = formatDuration(neutSec);
+
+  if (totalSec === 0) {
+    breakdownLabel.textContent = "No Activity";
+    breakdownRatio.textContent = "0%";
+    statusIndicator.className = "status-indicator neutral";
+    segProductive.style.width = "0%";
+    segDistracting.style.width = "0%";
+    segNeutral.style.width = "0%";
+    return;
+  }
+
+  const prodPct = Math.round((prodSec / totalSec) * 100);
+  const distPct = Math.round((distSec / totalSec) * 100);
+  const neutPct = Math.max(0, 100 - prodPct - distPct);
+
+  segProductive.style.width = `${prodPct}%`;
+  segDistracting.style.width = `${distPct}%`;
+  segNeutral.style.width = `${neutPct}%`;
+
+  if (prodSec >= distSec && prodSec >= neutSec && prodSec > 0) {
+    breakdownLabel.textContent = "Mostly Productive";
+    breakdownRatio.textContent = `${prodPct}%`;
+    statusIndicator.className = "status-indicator";
+  } else if (distSec >= prodSec && distSec >= neutSec && distSec > 0) {
+    breakdownLabel.textContent = "Mostly Distracting";
+    breakdownRatio.textContent = `${distPct}%`;
+    statusIndicator.className = "status-indicator distracting";
+  } else {
+    breakdownLabel.textContent = "Mostly Neutral";
+    breakdownRatio.textContent = `${neutPct}%`;
+    statusIndicator.className = "status-indicator neutral";
+  }
+}
+
+// Render 7-day Weekly Bar Chart (Aligned Uniform Columns)
 function renderWeeklyChart(weekKeys, todayKey) {
   barsContainer.innerHTML = "";
   const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-  // Find max time for chart scaling
   let maxSec = 1;
   const dayTotals = weekKeys.map((key) => {
     const total = cachedData?.days?.[key]?.totalSeconds || 0;
@@ -166,7 +225,7 @@ function renderWeeklyChart(weekKeys, todayKey) {
   weekKeys.forEach((key, index) => {
     const isToday = key === todayKey;
     const totalSec = dayTotals[index];
-    const percentage = Math.max(8, Math.round((totalSec / maxSec) * 58)); // 8px min, 58px max
+    const percentage = Math.max(6, Math.round((totalSec / maxSec) * 52));
 
     const col = document.createElement("div");
     col.className = `chart-col ${isToday ? "active" : ""}`;
@@ -188,13 +247,13 @@ function renderWeeklyChart(weekKeys, todayKey) {
   });
 }
 
-// Render Top Websites List
+// Render Top Websites List with Interactive Category Badges
 function renderTopWebsites(domainMap) {
   sitesListContainer.innerHTML = "";
 
   const sortedDomains = Object.entries(domainMap)
-    .filter(([_, sec]) => sec > 0)
-    .sort((a, b) => b[1] - a[1]);
+    .filter(([_, data]) => data.seconds > 0)
+    .sort((a, b) => b[1].seconds - a[1].seconds);
 
   if (sortedDomains.length === 0) {
     sitesListContainer.innerHTML = `<div class="empty-state">No browsing recorded yet for this period.</div>`;
@@ -202,28 +261,54 @@ function renderTopWebsites(domainMap) {
     return;
   }
 
-  const maxDomainSec = sortedDomains[0][1] || 1;
+  const maxDomainSec = sortedDomains[0][1].seconds || 1;
   const displayLimit = showAllSites ? sortedDomains.length : 4;
   const domainsToRender = sortedDomains.slice(0, displayLimit);
 
-  domainsToRender.forEach(([domain, sec]) => {
+  domainsToRender.forEach(([domain, data]) => {
+    const sec = data.seconds;
+    const category = data.category || "neutral";
     const barWidth = Math.max(5, Math.round((sec / maxDomainSec) * 100));
     const faviconUrl = `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
 
     const row = document.createElement("div");
     row.className = "site-row";
     row.innerHTML = `
-      <div class="site-favicon-box">
-        <img class="site-favicon" src="${faviconUrl}" alt="" />
-      </div>
-      <div class="site-info-col">
-        <div class="site-domain-name" title="${domain}">${domain}</div>
+      <img class="site-icon" src="${faviconUrl}" alt="" />
+      <div class="site-meta">
+        <div class="site-title-row">
+          <span class="site-name" title="${domain}">${domain}</span>
+          <span class="site-category-tag ${category}" title="Click to change category">${category}</span>
+        </div>
         <div class="site-bar-track">
           <div class="site-bar-fill" style="width: ${barWidth}%;"></div>
         </div>
       </div>
-      <div class="site-time-text">${formatDuration(sec)}</div>
+      <span class="site-time">${formatDuration(sec)}</span>
     `;
+
+    // Interactive category switcher: cycle productive -> distracting -> neutral
+    const tagEl = row.querySelector(".site-category-tag");
+    tagEl.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const nextCategory =
+        category === "productive"
+          ? "distracting"
+          : category === "distracting"
+          ? "neutral"
+          : "productive";
+
+      chrome.runtime.sendMessage(
+        {
+          type: "DRIFT_SET_CATEGORY",
+          domain,
+          category: nextCategory
+        },
+        () => {
+          loadDashboard();
+        }
+      );
+    });
 
     sitesListContainer.appendChild(row);
   });
@@ -251,7 +336,7 @@ tabButtons.forEach((btn) => {
   });
 });
 
-// View Navigation: Dashboard <-> Settings
+// Navigation: Dashboard <-> Settings
 btnOpenSettings.addEventListener("click", () => {
   viewDashboard.classList.remove("active");
   viewSettings.classList.add("active");
