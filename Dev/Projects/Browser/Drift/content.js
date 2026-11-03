@@ -1,4 +1,4 @@
-// Drift - System Themed Translucent Floating Pill
+// Drift - Subtle, Clean Floating Pill
 // Content Script: Website Overlay
 
 (function () {
@@ -8,7 +8,7 @@
   window.__drift_initialized = true;
 
   // --- STATE ---
-  let isMaximized = false; // default is minimized: icon + large bold time
+  let isMaximized = false; // default is minimized: icon + time
   let isPaused = false;
   let isDragging = false;
   let hasDragged = false;
@@ -53,7 +53,7 @@
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       user-select: none;
       -webkit-user-select: none;
     }
@@ -69,79 +69,79 @@
       cursor: grab;
       overflow: hidden;
 
-      /* Light Theme Variables */
-      --pill-bg: rgba(255, 255, 255, 0.85);
-      --pill-border: rgba(226, 232, 240, 0.95);
-      --pill-shadow: 0 8px 28px rgba(49, 91, 219, 0.12), 0 2px 6px rgba(0, 0, 0, 0.04);
-      --pill-text: #0f172a;
-      --pill-muted: #64748b;
-      --pill-icon-bg: rgba(241, 245, 249, 0.95);
-      --pill-btn-bg: #e8f0ff;
-      --pill-btn-color: #315bdb;
-      --pill-btn-hover: #d6e4ff;
-      --pill-paused: #d97706;
-      --pill-paused-bg: #fef3c7;
-      --pill-chevron: #94a3b8;
+      /* Subtle Light Theme */
+      --pill-bg: rgba(255, 255, 255, 0.92);
+      --pill-border: rgba(0, 0, 0, 0.08);
+      --pill-shadow: 0 2px 10px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
+      --pill-text: #18181b;
+      --pill-muted: #71717a;
+      --pill-icon-bg: #f4f4f5;
+      --pill-btn-bg: #f4f4f5;
+      --pill-btn-hover: #e4e4e7;
+      --pill-btn-color: #27272a;
+      --pill-paused: #c2410c;
+      --pill-paused-bg: #ffedd5;
+      --pill-chevron: #71717a;
 
       background: var(--pill-bg);
-      backdrop-filter: blur(20px) saturate(180%);
-      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       border: 1px solid var(--pill-border);
       box-shadow: var(--pill-shadow);
       color: var(--pill-text);
 
       opacity: 1;
-      transition: opacity 0.3s ease,
-                  transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+      transition: opacity 0.25s ease,
+                  transform 0.18s ease,
                   box-shadow 0.2s ease,
-                  top 0.32s cubic-bezier(0.16, 1, 0.3, 1),
-                  left 0.32s cubic-bezier(0.16, 1, 0.3, 1),
-                  right 0.32s cubic-bezier(0.16, 1, 0.3, 1),
-                  bottom 0.32s cubic-bezier(0.16, 1, 0.3, 1),
-                  height 0.25s cubic-bezier(0.16, 1, 0.3, 1),
-                  padding 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+                  top 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+                  left 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+                  right 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+                  bottom 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+                  height 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+                  padding 0.22s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    /* Dark Theme */
+    /* Subtle Dark Theme */
     @media (prefers-color-scheme: dark) {
       #drift-pill {
-        --pill-bg: rgba(15, 23, 42, 0.84);
-        --pill-border: rgba(255, 255, 255, 0.16);
-        --pill-shadow: 0 10px 34px rgba(0, 0, 0, 0.55), 0 3px 8px rgba(0, 0, 0, 0.35);
-        --pill-text: #f8fafc;
-        --pill-muted: #94a3b8;
-        --pill-icon-bg: rgba(255, 255, 255, 0.08);
-        --pill-btn-bg: rgba(49, 91, 219, 0.25);
-        --pill-btn-color: #60a5fa;
-        --pill-btn-hover: rgba(49, 91, 219, 0.38);
-        --pill-paused: #fbbf24;
-        --pill-paused-bg: rgba(245, 158, 11, 0.25);
-        --pill-chevron: rgba(255, 255, 255, 0.55);
+        --pill-bg: rgba(24, 24, 27, 0.88);
+        --pill-border: rgba(255, 255, 255, 0.1);
+        --pill-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+        --pill-text: #f4f4f5;
+        --pill-muted: #a1a1aa;
+        --pill-icon-bg: rgba(255, 255, 255, 0.06);
+        --pill-btn-bg: rgba(255, 255, 255, 0.08);
+        --pill-btn-hover: rgba(255, 255, 255, 0.14);
+        --pill-btn-color: #e4e4e7;
+        --pill-paused: #fb923c;
+        --pill-paused-bg: rgba(234, 88, 12, 0.15);
+        --pill-chevron: #a1a1aa;
       }
     }
 
     /* Corner Presets */
     #drift-pill.corner-top-right {
-      top: 24px;
-      right: 24px;
+      top: 20px;
+      right: 20px;
       left: auto;
       bottom: auto;
     }
     #drift-pill.corner-top-left {
-      top: 24px;
-      left: 24px;
+      top: 20px;
+      left: 20px;
       right: auto;
       bottom: auto;
     }
     #drift-pill.corner-bottom-right {
-      bottom: 24px;
-      right: 24px;
+      bottom: 20px;
+      right: 20px;
       top: auto;
       left: auto;
     }
     #drift-pill.corner-bottom-left {
-      bottom: 24px;
-      left: 24px;
+      bottom: 20px;
+      left: 20px;
       top: auto;
       right: auto;
     }
@@ -149,36 +149,36 @@
     /* Dragging Mode */
     #drift-pill.drift-dragging {
       cursor: grabbing !important;
-      transform: scale(1.04);
-      box-shadow: 0 16px 40px rgba(49, 91, 219, 0.28), 0 6px 16px rgba(0, 0, 0, 0.18) !important;
+      transform: scale(1.03);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18) !important;
       transition: none !important;
     }
 
-    /* Smart Idle Dimming */
+    /* Idle State */
     #drift-pill.drift-idle:not(:hover):not(.maximized) {
-      opacity: 0.45;
+      opacity: 0.5;
     }
 
     #drift-pill:not(.drift-dragging):hover {
-      transform: scale(1.02);
-      box-shadow: 0 10px 32px rgba(49, 91, 219, 0.18), 0 4px 10px rgba(0, 0, 0, 0.08);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.09);
     }
 
-    /* 1. MINIMIZED: Big, Clear Favicon + Bold Time */
+    /* 1. MINIMIZED: Clean Favicon + Legible Time */
     #drift-pill.minimized {
-      height: 46px;
-      padding: 0 18px 0 12px;
-      gap: 12px;
+      height: 42px;
+      padding: 0 16px 0 10px;
+      gap: 10px;
     }
 
     #drift-pill.minimized .drift-icon {
-      width: 26px;
-      height: 26px;
+      width: 22px;
+      height: 22px;
     }
 
     #drift-pill.minimized .drift-time {
-      font-size: 18px;
-      font-weight: 700;
+      font-size: 16px;
+      font-weight: 600;
       color: var(--pill-text);
       line-height: 1;
     }
@@ -190,19 +190,19 @@
 
     /* 2. MAXIMIZED: Favicon, Time, Domain, Pause & Chevron */
     #drift-pill.maximized {
-      height: 58px;
-      padding: 0 18px 0 14px;
-      gap: 14px;
+      height: 52px;
+      padding: 0 16px 0 12px;
+      gap: 12px;
     }
 
     #drift-pill.maximized .drift-icon {
-      width: 30px;
-      height: 30px;
+      width: 26px;
+      height: 26px;
     }
 
     #drift-pill.maximized .drift-time {
-      font-size: 19px;
-      font-weight: 700;
+      font-size: 17px;
+      font-weight: 600;
       color: var(--pill-text);
       line-height: 1.1;
     }
@@ -217,9 +217,9 @@
 
     /* Favicon */
     .drift-icon {
-      border-radius: 8px;
+      border-radius: 5px;
       background: var(--pill-icon-bg);
-      padding: 3px;
+      padding: 2px;
       object-fit: contain;
       flex-shrink: 0;
       transition: width 0.2s, height 0.2s;
@@ -234,7 +234,7 @@
 
     .drift-time {
       font-variant-numeric: tabular-nums;
-      letter-spacing: -0.02em;
+      letter-spacing: -0.01em;
       transition: font-size 0.2s ease, color 0.2s ease;
     }
 
@@ -244,11 +244,11 @@
 
     /* Domain Link */
     .drift-domain {
-      font-size: 11.5px;
+      font-size: 11px;
       font-weight: 500;
       color: var(--pill-muted);
       text-decoration: none;
-      max-width: 135px;
+      max-width: 130px;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -257,11 +257,11 @@
     }
 
     .drift-domain:hover {
-      color: var(--pill-btn-color);
+      color: var(--pill-text);
       text-decoration: underline;
     }
 
-    /* Buttons */
+    /* Action Buttons */
     .drift-btn {
       align-items: center;
       justify-content: center;
@@ -269,23 +269,22 @@
       background: none;
       cursor: pointer;
       padding: 0;
-      border-radius: 10px;
+      border-radius: 8px;
       transition: all 0.15s ease;
     }
 
     .drift-pause {
-      width: 32px;
-      height: 32px;
-      border-radius: 10px;
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
       background: var(--pill-btn-bg);
       color: var(--pill-btn-color);
-      font-size: 11px;
-      font-weight: 700;
+      font-size: 10px;
+      font-weight: 600;
     }
 
     .drift-pause:hover {
       background: var(--pill-btn-hover);
-      transform: scale(1.05);
     }
 
     .drift-pause.paused {
@@ -294,13 +293,13 @@
     }
 
     .drift-toggle {
-      width: 24px;
-      height: 32px;
+      width: 20px;
+      height: 28px;
       color: var(--pill-chevron);
     }
 
     .drift-toggle:hover {
-      color: var(--pill-btn-color);
+      color: var(--pill-text);
     }
 
     .drift-toggle svg {
@@ -462,8 +461,8 @@
     }
 
     if (hasDragged) {
-      const width = pill.offsetWidth || 150;
-      const height = pill.offsetHeight || 46;
+      const width = pill.offsetWidth || 140;
+      const height = pill.offsetHeight || 42;
 
       let newLeft = initialLeft + dx;
       let newTop = initialTop + dy;
